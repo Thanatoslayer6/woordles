@@ -1,7 +1,3 @@
-<script>
-
-</script>
-
 <svelte:head>
 	<title>Wordle</title>
 	<meta name="description" content="Svelte demo app" />
@@ -14,7 +10,6 @@
 
 <style>
     div {
-        background-color: red;
         text-align: center;
 	}
 

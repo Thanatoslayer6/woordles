@@ -4,6 +4,7 @@
   let currentActiveRow = 0;
   let currentActiveColumn = 0;
   let writtenWords = [];
+
   function handleKeyDown(event) {
     let { key } = event;
     // Try to render the letter
@@ -12,6 +13,7 @@
     }
 
     if (key == "Enter") {
+        if (letters.length != 6) return;
         formLettersAsWord();
         validateWord();
     }
@@ -22,33 +24,53 @@
 
   }
 
-  const validateWord = () => {
-      // First we validate the formed word pushed in `writtenWords`
+  const validateWord = () => { 
+    // First we validate the formed word pushed in `writtenWords`
     let formedWord = writtenWords[writtenWords.length - 1];
+    let checkWordle = secretWord;
+    const guess = []
+    // Step 1: Check the right letters first, then remove them to solve duplicated letters problems
     console.log(formedWord)
     for (let i = 0; i < 6; i++) {
-        // Green      
-        if (secretWord.includes(formedWord[i]) && secretWord[i] == formedWord[i]) {
-            console.log(`There is one located at - ${formedWord[i]} - column: ${i} - row: ${currentActiveRow} - This should be green`)
-            // Render the appropriate color
-            let placeholder = document.querySelector(`[data-num="${currentActiveRow}-${i}"]`);
-            placeholder.style.backgroundColor = "lightgreen";
-            break;
+        if (checkWordle.includes(formedWord[i]) && checkWordle[i] == formedWord[i]) {
+            guess[i] = "#538d4e";
+            checkWordle = checkWordle.replace(formedWord[i], '-');
+        } else {
+            guess[i] = "#3a3a3c";
         }
-        // TODO: Test this and continue
-        // Yellow
-        if (secretWord)
     }
+    
+    // Step 2: Check for the incorrectly placed letters
+    for (let i = 0 ; i < 6; i++) {
+        if (checkWordle.includes(formedWord[i]) && guess[i] != "#538d4e") {
+            guess[i] = "#b59f3a";
+        }
+    }
+    
+    // Step 3: Render everything 
+    for (let i = 0; i < 6; i++) {
+        let placeholder = document.querySelector(`[data-num="${currentActiveRow}-${i}"]`);
+        placeholder.style.backgroundColor = guess[i]
+    }
+
+    setTimeout(() => {
+        if (formedWord === secretWord) {
+            alert("Congratulations");
+            return;
+        }
+        if (currentActiveRow == 6) {
+            alert("Game over!");
+            return;
+        }
+    }, 250)
+
     // Go next row, if already at last then stop
-    if (currentActiveRow == 5) return;
     currentActiveRow++;
     currentActiveColumn = 0;
     letters = [];
   }
     
-  const formLettersAsWord = () => {
-    if (letters.length != 6) return;
-    
+  const formLettersAsWord = () => { 
     let formedWord = letters.join("");
     console.log(`Adding word -> ${formedWord}`);
     writtenWords.push(formedWord);
@@ -77,7 +99,6 @@
 </script>
 
 <svelte:window on:keydown={(event) => handleKeyDown(event)} />
-
 <div class="grid">
   {#each Array.from(Array(6).keys()) as row (row)}
     {#each Array.from(Array(6).keys()) as col (col)}
@@ -96,7 +117,7 @@
     align-items: center; /* Center the grid vertically */
     width: 400px; /* Set the width of the grid container */
     height: 400px; /* Set the height of the grid container */
-    margin: 4em auto;
+    margin: 2em auto;
   }
 
   .placeholder {
