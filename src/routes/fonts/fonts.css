@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'Quicksand';
+  src: url('./Quicksand-Regular.ttf') format('truetype'); /* Adjust the path and filename as per your downloaded font file */
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  src: url('./Quicksand-Bold.ttf') format('truetype'); /* Adjust the path and filename for the Bold font file */
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  src: url('./Quicksand-SemiBold.ttf') format('truetype'); /* Adjust the path and filename as per your downloaded SemiBold font file */
+  font-weight: 600; /* Specify the font weight as 600 for SemiBold */
+  font-style: normal;
+}

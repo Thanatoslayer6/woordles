@@ -39,7 +39,7 @@
             guess[i] = "#3a3a3c";
         }
     }
-    
+
     // Step 2: Check for the incorrectly placed letters
     for (let i = 0 ; i < 6; i++) {
         if (checkWordle.includes(formedWord[i]) && guess[i] != "#538d4e") {
@@ -86,20 +86,16 @@
     letters.push(key);
     // Render
     let placeholder = document.querySelector(`[data-num="${currentActiveRow}-${currentActiveColumn}"]`);
-    // Add bounce animation
-    /* placeholder.classList.add('bounce'); */
 
-    /* // Remove bounce animation after a delay */
-    /* setTimeout(() => { */
-    /*   placeholder.classList.remove('bounce'); */
-    /* }, 500); */
+    placeholder.textContent = key;
 
     // Trigger animation
     placeholder.animate(
       { transform: ['scale(1)', 'scale(1.1)', 'scale(1)'] },
       { duration: 150 }
     );
-    placeholder.textContent = key;
+    placeholder.style.border = "2px solid #8c7573";
+
     currentActiveColumn++;
   }
 
@@ -110,12 +106,12 @@
     // Render
     let placeholder = document.querySelector(`[data-num="${currentActiveRow}-${currentActiveColumn - 1}"]`);
     placeholder.textContent = "";
+    placeholder.style.border = "";
     currentActiveColumn--;
   }
 </script>
 
 <svelte:window on:keydown={(event) => handleKeyDown(event)} />
-
 {#if isGameWon}
   <div class="dialog-overlay">
     <div class="dialog-box">
@@ -149,11 +145,12 @@
   }
 
   .placeholder {
+    font-weight: 600;
+    box-sizing: border-box; /* Include border in the element's size calculation */
     display: inline-grid;
     align-items: center;
     text-align: center;
     color: #1C2025;
-    background-color: #E1D6BA;
     border-radius: 6px;
     font-size: xx-large;
     width: 2em;
@@ -181,8 +178,14 @@
   }
 
   :global(body.dark-mode) .placeholder {
+    border: 2px solid #193561;
 	background-color: #8F90A6;
     color: #1C2025;
+  }
+  
+  :global(body) .placeholder {
+    background-color: #E1D6BA;
+    border: 2px solid #c1b4b3;
   }
 
 </style>
