@@ -4,8 +4,9 @@
 </svelte:head>
 
 <div>
-    <h1>Welcome to Wordle!</h1>
+    <h1>Welcome to Letterdash!</h1>
     <a href="/play">Play</a>
+    <a href="/play">Daily Word</a>
 </div>
 
 <style>

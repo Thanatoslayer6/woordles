@@ -4,7 +4,7 @@
   let currentActiveRow = 0;
   let currentActiveColumn = 0;
   let writtenWords = [];
-
+  let isGameWon = false;
   function handleKeyDown(event) {
     let { key } = event;
     // Try to render the letter
@@ -47,19 +47,22 @@
         }
     }
     
-    // Step 3: Render everything 
+    // Step 3: Render everything add some animation
     for (let i = 0; i < 6; i++) {
         let placeholder = document.querySelector(`[data-num="${currentActiveRow}-${i}"]`);
         placeholder.style.backgroundColor = guess[i]
+        placeholder.style.color = "white"
     }
+    
 
     setTimeout(() => {
         if (formedWord === secretWord) {
-            alert("Congratulations");
+            isGameWon = true;
             return;
         }
         if (currentActiveRow == 6) {
             alert("Game over!");
+            isGameWon = false;
             return;
         }
     }, 250)
@@ -83,6 +86,19 @@
     letters.push(key);
     // Render
     let placeholder = document.querySelector(`[data-num="${currentActiveRow}-${currentActiveColumn}"]`);
+    // Add bounce animation
+    /* placeholder.classList.add('bounce'); */
+
+    /* // Remove bounce animation after a delay */
+    /* setTimeout(() => { */
+    /*   placeholder.classList.remove('bounce'); */
+    /* }, 500); */
+
+    // Trigger animation
+    placeholder.animate(
+      { transform: ['scale(1)', 'scale(1.1)', 'scale(1)'] },
+      { duration: 150 }
+    );
     placeholder.textContent = key;
     currentActiveColumn++;
   }
@@ -99,6 +115,20 @@
 </script>
 
 <svelte:window on:keydown={(event) => handleKeyDown(event)} />
+
+{#if isGameWon}
+  <div class="dialog-overlay">
+    <div class="dialog-box">
+      <h3>Congratulations!</h3>
+      <p>You won the game!</p>
+      <button on:click={() => {
+              isGameWon = false
+              window.location.reload()
+            }
+        }>Close</button>
+    </div>
+  </div>
+{/if}
 <div class="grid">
   {#each Array.from(Array(6).keys()) as row (row)}
     {#each Array.from(Array(6).keys()) as col (col)}
@@ -112,21 +142,47 @@
     display: grid;
     grid-template-columns: repeat(6, 1fr); /* Creates 6 equal-width columns */
     grid-template-rows: repeat(6, 1fr);
-    gap: 8px;
-    justify-content: center; /* Center the grid horizontally */
-    align-items: center; /* Center the grid vertically */
+    gap: 4px;
     width: 400px; /* Set the width of the grid container */
     height: 400px; /* Set the height of the grid container */
     margin: 2em auto;
   }
 
   .placeholder {
+    display: inline-grid;
+    align-items: center;
     text-align: center;
-    background-color: #eaeaea; /* Set the background color of grid items */
-    border-radius: 0.5em;
-    padding: 1em;
+    color: #1C2025;
+    background-color: #E1D6BA;
+    border-radius: 6px;
+    font-size: xx-large;
     width: 2em;
     height: 2em;
-    margin: 0;
   }
+
+  .dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .dialog-box {
+    background-color: #fff;
+    padding: 5rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  :global(body.dark-mode) .placeholder {
+	background-color: #8F90A6;
+    color: #1C2025;
+  }
+
 </style>

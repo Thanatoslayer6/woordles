@@ -1,12 +1,9 @@
-<!-- Header.svelte -->
 <script>
-  let theme = 'light';
-
+  import { onMount } from "svelte"; 
+  let toggled = false;
+  onMount(() => toggled = false);
   function toggleTheme() {
-    theme = theme === 'light' ? 'dark' : 'light';
-    // Perform theme change logic here
-    // You can update CSS classes or apply theme-specific stylesheets
-    console.log('Theme:', theme);
+    window.document.body.classList.toggle('dark-mode')
   }
 </script>
 
@@ -16,8 +13,6 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background-color: #f2f2f2;
-    transition: background-color 0.3s ease-in-out;
   }
 
   .navigation {
@@ -64,36 +59,30 @@
     transform: translateX(20px);
   }
 
-   /* Define your theme-specific styles here */
-  .light-theme {
-    /* Light theme styles */
-    background-color: #f2f2f2;
-    color: #333;
-  }
-
-  .dark-theme {
-    /* Dark theme styles */
-    background-color: #333;
-    color: #f2f2f2;
-  }
+	:global(body) {
+		background-color: #f2eee2;
+		transition: background-color 0.3s
+	}
+	:global(body.dark-mode) {
+		background-color: #1d3040;
+		color: #bfc2c7;
+	}
 
 </style>
 
-//TODO: Continue this
-
-<div bind class="header">
-  <div class="logo">Werdle!</div>
+<div class="header">
+  <div class="logo">Letterdash</div>
   <div class="navigation">
     <a href="/">Home</a>
     <a href="/sverdle/how-to-play">Tutorial</a>
     <a href="/about">About</a>
   </div>
     <label class="theme-switch">
-      <input class="theme-switch-checkbox" type="checkbox" on:change={toggleTheme} />
+        <input class="theme-switch-checkbox" type="checkbox" on:change={toggleTheme} checked={toggled}/>
       <span class="theme-switch-slider"></span>
     </label>
 </div>
 
-<div class="layout" class:dark-theme={theme === 'dark'}>
+<div class="layout">
     <slot />
 </div>
