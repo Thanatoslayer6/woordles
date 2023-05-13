@@ -9,7 +9,7 @@
 	<p>
 		Woordle is a 6-letter <a
 			href="https://www.nytimes.com/games/wordle/index.html">Wordle</a
-		>, the word guessing game. To play, enter a five-letter English word.
+		>, the word guessing game. To play, enter a six-letter English word.
 		For example:
 	</p>
 

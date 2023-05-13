@@ -1,14 +1,45 @@
 <script>
-  import { words, getRandomWord } from "../words";
+  import { words, getRandomWord, isWordValid, getRandomFreeplay } from "../words";
   import { confetti } from "@neoconfetti/svelte";
+  import { onMount } from "svelte";    
 
   let secretWord = getRandomWord().toUpperCase();
-  console.log(secretWord);
+  console.log(`The secret word is: ${secretWord}`);
   let letters = []; // Array to store the letters for each grid item
   let currentActiveRow = 0;
   let currentActiveColumn = 0;
   let writtenWords = [];
   let isGameWon;
+
+  onMount(() => {
+      let placeholders = document.querySelectorAll(".placeholder");
+      placeholders.forEach(item => {
+        item.animate(
+          { transform: ["scale(0)", "scale(1)"] },
+          { duration: 500, easing: "ease-in-out" }
+        )       
+      })
+
+  });
+  function restartGame() {
+      isGameWon = undefined;
+      secretWord = getRandomWord().toUpperCase();
+      console.log(`The secret word is: ${secretWord}`);
+      letters = []; // Array to store the letters for each grid item
+      currentActiveRow = 0;
+      currentActiveColumn = 0;
+      writtenWords = [];
+      for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++) {
+            let placeholder = document.querySelector(
+              `[data-num="${i}-${j}"]`
+            );
+            placeholder.textContent = "";
+            placeholder.style = "";
+        }
+      }
+  }
+
   function handleKeyDown(event) {
     let { key } = event;
     // Try to render the letter
@@ -31,6 +62,27 @@
   const validateWord = async () => {
     // First we validate the formed word pushed in `writtenWords`
     let formedWord = writtenWords[writtenWords.length - 1];
+    let validityOfWord = await isWordValid(formedWord);
+    console.log(validityOfWord);
+    if (Array.isArray(validityOfWord)) {
+        // Word is valid 
+        console.log("Word is valid... please proceed...");
+    } else {
+        // Word is invalid 
+        console.log("Word is invalid!");
+        writtenWords.pop(); // Remove word from the list
+        // Animate the whole row indicating that the word is invalid
+        for (let i = 0; i < 6; i++) {
+          let placeholder = document.querySelector(
+            `[data-num="${currentActiveRow}-${i}"]`
+          );
+          placeholder.animate(
+            { transform: ["translateX(0)", "translateX(-5px)", "translateX(5px)", "translateX(0)"] },
+            { duration: 150 }
+          );
+        }
+        return;
+    }
     let checkWordle = secretWord;
     const guess = [];
     // Step 1: Check the right letters first, then remove them to solve duplicated letters problems
@@ -154,8 +206,7 @@
       <button
         class="newGameButton"
         on:click={() => {
-          isGameWon = undefined;
-          window.location.reload();
+            restartGame()
         }}>New Game</button
       >
 
@@ -182,8 +233,7 @@
       <button
         class="newGameButton"
         on:click={() => {
-          isGameWon = undefined;
-          window.location.reload();
+            restartGame();
         }}>New Game</button
       >
       <button
@@ -195,6 +245,16 @@
     </div>
   </div>
 {/if}
+
+<div style="position: absolute; left: 2em;">
+    <span class="gameMode">
+        Freeplay
+    </span>
+    <p style="color: #6aaa64; padding-top: 0.5em; width: 300px;">
+        {getRandomFreeplay()}
+    </p>
+</div>
+
 <div class="grid">
   {#each Array.from(Array(6).keys()) as row (row)}
     {#each Array.from(Array(6).keys()) as col (col)}
@@ -211,7 +271,7 @@
     gap: 4px;
     width: 400px; /* Set the width of the grid container */
     height: 400px; /* Set the height of the grid container */
-    margin: 2em auto;
+    margin: 3em auto;
   }
 
   .placeholder {
@@ -292,7 +352,23 @@
     transition: background-color 0.3s ease-in-out;
   }
   .newGameButton:hover,
+
   .closeButton:hover {
     background-color: darken(currentColor, 10%);
+  }
+
+  :global(body) .gameMode {
+    font-size: 24px; 
+    font-weight: bold; 
+    background-color: #6aaa64; 
+    color: #f2eee2;
+    border-radius: 4px;
+    padding: 0.5em;
+    font-weight: bold;
+    border-width: 2px;
+  }
+
+  :global(body.dark-mode) .gameMode {
+    color: #1d3040;
   }
 </style>
