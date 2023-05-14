@@ -42,8 +42,7 @@
 
   <nav class="navigation">
     <a href="/" class:active={routeId === "/"}>Home</a>
-    <a href="/how-to-play" class:active={routeId === "/how-to-play"}>Tutorial</a
-    >
+    <a href="/how-to-play" class:active={routeId === "/how-to-play"}>Tutorial</a>
     <a href="/about" class:active={routeId === "/about"}>About</a>
   </nav>
   <div class="themebox">

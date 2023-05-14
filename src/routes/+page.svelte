@@ -9,7 +9,6 @@
                 const response = await getRandomQuote();
                 console.log(response)
                 quote.set(response);
-                /* quoteData = response; */
             } catch (error) {
                 console.error('Error fetching quote:', error);
             }

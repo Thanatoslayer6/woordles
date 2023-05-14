@@ -14,7 +14,7 @@ export const freeplay = [
     "Unleash your word wizardry!",
     "Immerse yourself in a world of words without boundaries.",
     "Unwind and let your words flow.",
-    "\"Words Words Words\" - Bo Burnham",
+    "Words Words Words!",
     "Put your guessing skills to the test!",
     "Just you and a grid...",
     "guess, discover, learn, repeat...",
