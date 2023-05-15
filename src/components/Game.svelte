@@ -5,38 +5,21 @@
   import { onMount } from "svelte";    
   import { freeplayState } from "../routes/stores";
 
-//   let secretWord = getRandomWord().toUpperCase();
-//   console.log(`The secret word is: ${secretWord}`);
-//   let letters = []; // Array to store the letters for each grid item
-//   let currentActiveRow = 0;
-//   let currentActiveColumn = 0;
-//   let writtenWords = [];
-//   let isGameWon, gameHasStarted, freeplayData;
-
-  let freeplayData;
-
   onMount(() => {
     animateGrid(false)
     let temp = getRandomWord().toUpperCase();
-    if (!freeplayData) {
-        freeplayState.set({
-            secretWord: temp,
-            letters: [],
-            currentActiveRow: 0,
-            currentActiveColumn: 0,
-            writtenWords: [],
-            isGameWon: undefined, 
-            gameHasStarted: undefined,
-        })
-    }
 
+    $freeplayState = {
+        secretWord: temp,
+        letters: [],
+        currentActiveRow: 0,
+        currentActiveColumn: 0,
+        writtenWords: [],
+        isGameWon: undefined, 
+        gameHasStarted: undefined,
+    };
     console.log(`The secret word is: ${temp}`);
   });
-
-  freeplayState.subscribe((data) => {
-    freeplayData = data;
-    console.log(freeplayData)
-  })
 
   function animateGrid(clear) {
     let placeholders = document.querySelectorAll(".placeholder");
@@ -61,26 +44,18 @@
   }
 
   function restartGame() {
-    freeplayState.update((currentData) => {
-        return { 
-            ...currentData, 
-            isGameWon: undefined, 
-            gameHasStarted: undefined,
-            secretWord: getRandomWord().toUpperCase(),
-            letters: [],
-            currentActiveRow: 0,
-            currentActiveColumn: 0,
-            writtenWords: []
-        }
-    })
-    // isGameWon = undefined;
-    // gameHasStarted = undefined;
-    // secretWord = getRandomWord().toUpperCase();
-    // console.log(`The secret word is: ${secretWord}`);
-    // letters = []; // Array to store the letters for each grid item
-    // currentActiveRow = 0;
-    // currentActiveColumn = 0;
-    // writtenWords = [];
+    $freeplayState.isGameWon = undefined;
+    $freeplayState.gameHasStarted = undefined;
+    $freeplayState.secretWord = getRandomWord().toUpperCase();
+    console.log(`The secret word is: ${$freeplayState.secretWord}`);
+
+    $freeplayState.letters = []; // Array to store the letters for each grid item
+
+    $freeplayState.currentActiveRow = 0;
+
+    $freeplayState.currentActiveColumn = 0;
+
+    $freeplayState.writtenWords = [];
     animateGrid(true); // Animate grid
   }
 
@@ -92,7 +67,7 @@
     }
 
     if (key == "Enter") {
-      if (freeplayData.letters.length != 6) return;
+      if ($freeplayState.letters.length != 6) return;
       formLettersAsWord();
       validateWord();
     }
@@ -105,43 +80,27 @@
   const timer = (ms) => new Promise((res) => setTimeout(res, ms));
   const validateWord = async () => {
     // First we validate the formed word pushed in `writtenWords`
-    let formedWord = freeplayData.writtenWords[freeplayData.writtenWords.length - 1];
+    let formedWord = $freeplayState.writtenWords[$freeplayState.writtenWords.length - 1];
     let validityOfWord = await isWordValid(formedWord);
     if (Array.isArray(validityOfWord)) {
         // Word is valid 
         console.log("Word is valid... please proceed...");
         // gameHasStarted = true; // Start the game
-        freeplayState.update((currentData) => {
-            return { 
-                ...currentData, 
-                gameHasStarted: true,
-            }
-        })
-    } else {
-        // Word is invalid 
-        console.log("Word is invalid!");
-        // writtenWords.pop(); // Remove word from the list
         // freeplayState.update((currentData) => {
-        //     currentData
         //     return { 
         //         ...currentData, 
         //         gameHasStarted: true,
         //     }
         // })
-        freeplayState.update((currentData) => {
-            const newWrittenWords = [...currentData.writtenWords]; // Create a copy of the existing array
-            newWrittenWords.pop(); // Remove the last element from the copied array
-
-            return {
-                ...currentData,
-                writtenWords: newWrittenWords, // Assign the updated array to writtenWords
-            };
-        });
-
+        $freeplayState.gameHasStarted = true;
+    } else {
+        // Word is invalid 
+        console.log("Word is invalid!");
+        $freeplayState.writtenWords.pop();
         // Animate the whole row indicating that the word is invalid
         for (let i = 0; i < 6; i++) {
           let placeholder = document.querySelector(
-            `[data-num="${freeplayData.currentActiveRow}-${i}"]`
+            `[data-num="${$freeplayState.currentActiveRow}-${i}"]`
           );
           placeholder.animate(
             { transform: ["translateX(0)", "translateX(-5px)", "translateX(5px)", "translateX(0)"] },
@@ -150,7 +109,7 @@
         }
         return;
     }
-    let checkWordle = freeplayData.secretWord;
+    let checkWordle = $freeplayState.secretWord;
     const guess = [];
     // Step 1: Check the right letters first, then remove them to solve duplicated letters problems
     console.log(formedWord);
@@ -176,7 +135,7 @@
     // Step 3: Render everything add some animation
     for (let i = 0; i < 6; i++) {
       let placeholder = document.querySelector(
-        `[data-num="${freeplayData.currentActiveRow}-${i}"]`
+        `[data-num="${$freeplayState.currentActiveRow}-${i}"]`
       );
       placeholder.animate(
         { transform: ["rotateX(0deg)", "rotateX(90deg)", "rotateX(0deg)"] },
@@ -189,79 +148,38 @@
     }
 
     setTimeout(() => {
-      if (formedWord === freeplayData.secretWord) {
-        freeplayState.update((currentData) => {
-            return {
-                ...currentData,
-                isGameWon: true, // Assign the updated array to writtenWords
-            };
-        });
+      if (formedWord === $freeplayState.secretWord) {
+        $freeplayState.isGameWon = true;
         return;
       }
-      if (freeplayData.currentActiveRow == 6) {
-        // isGameWon = false;
-
-        freeplayState.update((currentData) => {
-            return {
-                ...currentData,
-                isGameWon: false, // Assign the updated array to writtenWords
-            };
-        });
+      if ($freeplayState.currentActiveRow == 6) {
+        $freeplayState.isGameWon = false;
         return;
       }
     }, 250);
 
     // Go next row, if already at last then stop
 
-    // currentActiveRow++;
-    // currentActiveColumn = 0;
-    // letters = [];
+    $freeplayState.currentActiveRow++;
+    $freeplayState.currentActiveColumn = 0;
+    $freeplayState.letters = [];
 
-    freeplayState.update((currentData) => {
-        let temp = currentData.currentActiveRow++;
-        return {
-            ...currentData,
-            currentActiveRow: temp, // Assign the updated array to writtenWords
-            currentActiveColumn: 0,
-            letters: []
-        };
-    });
   };
 
   const formLettersAsWord = () => {
-    let formedWord = freeplayData.letters.join("");
+    let formedWord = $freeplayState.letters.join("");
     console.log(`Adding word -> ${formedWord}`);
-    // writtenWords.push(formedWord);
-    freeplayState.update((currentData) => {
-        const newWrittenWords = [...currentData.writtenWords]; // Create a copy of the existing array
-        newWrittenWords.push(formedWord); // Remove the last element from the copied array
-
-        return {
-            ...currentData,
-            writtenWords: newWrittenWords, // Assign the updated array to writtenWords
-        };
-    });
-
-    console.log(freeplayData.writtenWords);
+    $freeplayState.writtenWords.push(formedWord);
+    console.log($freeplayState.writtenWords);
   };
 
   const addLetterOnGrid = (key) => {
-    console.log(freeplayData)
-    if (freeplayData.letters.length == 6) return;
-    // letters.push(key);
+    if ($freeplayState.letters.length == 6) return;
+      $freeplayState.letters.push(key);
 
-    freeplayState.update((currentData) => {
-        const newLetters = [...currentData.letters]; // Create a copy of the existing array
-        newLetters.push(key); // Remove the last element from the copied array
-
-        return {
-            ...currentData,
-            letters: newLetters, // Assign the updated array to writtenWords
-        };
-    });
     // Render
     let placeholder = document.querySelector(
-      `[data-num="${freeplayData.currentActiveRow}-${freeplayData.currentActiveColumn}"]`
+      `[data-num="${$freeplayState.currentActiveRow}-${$freeplayState.currentActiveColumn}"]`
     );
 
     placeholder.textContent = key;
@@ -279,51 +197,28 @@
       placeholder.style.border = "2px solid rgba(50, 50, 50, 0.8)";
     }
 
-    // currentActiveColumn++;
+    $freeplayState.currentActiveColumn++;
 
-    freeplayState.update((currentData) => {
-        let temp = currentData.currentActiveColumn++;
-        return {
-            ...currentData,
-            currentActiveColumn: temp,
-        };
-    });
   };
 
   const removeLetterOnGrid = () => {
-    if (freeplayData.letters.length == 0) return;
-    console.log(freeplayData.letters);
+    if ($freeplayState.letters.length == 0) return;
+    console.log($freeplayState.letters);
     // letters.pop();
-
-    freeplayState.update((currentData) => {
-        const newLetters = [...currentData.letters]; // Create a copy of the existing array
-        newLetters.pop(); // Remove the last element from the copied array
-
-        return {
-            ...currentData,
-            letters: newLetters, // Assign the updated array to writtenWords
-        };
-    });
-
+    $freeplayState.letters.pop();
     // Render
     let placeholder = document.querySelector(
-      `[data-num="${freeplayData.currentActiveRow}-${freeplayData.currentActiveColumn - 1}"]`
+      `[data-num="${$freeplayState.currentActiveRow}-${$freeplayState.currentActiveColumn - 1}"]`
     );
     placeholder.textContent = "";
     placeholder.style.border = "";
     // currentActiveColumn--;
+    $freeplayState.currentActiveColumn--;
 
-    freeplayState.update((currentData) => {
-        let temp = currentData.currentActiveColumn--;
-        return {
-            ...currentData,
-            currentActiveColumn: temp,
-        };
-    });
   };
 </script>
 
-<svelte:window on:keydown={(event) => { if (freeplayData.isGameWon == undefined) handleKeyDown(event);}}/>
+<svelte:window on:keydown={(event) => { if ($freeplayState.isGameWon == undefined) handleKeyDown(event);}}/>
 
 <div class="grid">
     <div style="position: absolute; left: 2em;">
@@ -333,7 +228,7 @@
         <p style="color: #6aaa64; padding-top: 0.5em; width: 300px;">
             {getRandomFreeplay()}
         </p>
-        {#if freeplayData.gameHasStarted == true}
+        {#if $freeplayState.gameHasStarted == true}
             <div transition:fade={{ duration: 500 }}>
             <button class="resetGameButton" on:click={restartGame}>
             <span class="resetGameIcon">
@@ -358,10 +253,10 @@
                 Reset game
             </button>
             <!-- Only show give up button if user hasn't surrendered or anything !-->
-            {#if freeplayData.isGameWon == undefined || freeplayData.isGameWon == false}
+            {#if $freeplayState.isGameWon == undefined || $freeplayState.isGameWon == false}
                 <button class="giveUpButton" on:click={() => { 
-                        freeplayData.gameHasStarted = undefined;
-                        freeplayData.isGameWon = false;
+                        $freeplayState.gameHasStarted = undefined;
+                        $freeplayState.isGameWon = false;
                 }}>
                 <span class="giveUpIcon">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 493.349 493.349">

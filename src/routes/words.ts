@@ -1,9 +1,9 @@
 export const words = [
     "Router",
-    "Abcdef",
-    "Flowse",
+    // "Abcdef",
+    // "Flowse",
     "Glitch",
-    "Pouthe",
+    // "Pouthe",
     "Crooks",
     "Wanton"
 ]
