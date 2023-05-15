@@ -1,11 +1,12 @@
 <script>
-  import { getRandomWord, isWordValid, getRandomFreeplay } from "../words";
+  import { getRandomWord, isWordValid } from "../routes/words";
   import { confetti } from "@neoconfetti/svelte";
   import { fade, scale } from "svelte/transition";
   import { onMount } from "svelte";
-  import { freeplayState } from "../stores";
+  import { dailyTimeRemaining, dailyplayState } from "../routes/stores";
   import { beforeNavigate } from "$app/navigation";
-
+  export let gameModeType; // Can be "Freeplay" or "Daily"
+  export let descriptor;
   // let secretWord = getRandomWord().toUpperCase();
   let letters = []; // Array to store the letters for each grid item
   let currentActiveRow = 0;
@@ -13,20 +14,32 @@
   let writtenWords = [];
   let woordleData = [];
   let secretWord, isGameWon, gameHasStarted;
+  let isWordExpired = false;
 
   onMount(async () => {
+    const storedData = JSON.parse(localStorage.getItem("daily"));
+    console.log(storedData);
+    if (storedData && storedData.word && storedData.expiryDate) {
+      console.log(storedData.word);
+      secretWord = storedData.word;
+      const currentDate = new Date().getTime();
+      isWordExpired = currentDate > storedData.expiryDate;
+    }
+
     // Load status (first check if there is data stored)
-    if ($freeplayState) {
+    if ($dailyplayState) {
       // If there is something stored in the writable
       // Load the stuff
-      letters = $freeplayState.letters;
-      currentActiveRow = $freeplayState.currentActiveRow;
-      currentActiveColumn = $freeplayState.currentActiveColumn;
-      writtenWords = $freeplayState.writtenWords;
-      secretWord = $freeplayState.secretWord;
-      isGameWon = $freeplayState.isGameWon;
-      gameHasStarted = $freeplayState.gameHasStarted;
-      woordleData = $freeplayState.woordleData;
+      letters = $dailyplayState.letters;
+      currentActiveRow = $dailyplayState.currentActiveRow;
+      currentActiveColumn = $dailyplayState.currentActiveColumn;
+      writtenWords = $dailyplayState.writtenWords;
+      // secretWord = $dailyplayState.secretWord;
+      isGameWon = $dailyplayState.isGameWon;
+      gameHasStarted = $dailyplayState.gameHasStarted;
+      woordleData = $dailyplayState.woordleData;
+
+      // Load the secretWord
 
       // Render the used tiles properly
       for (let j = 0; j < woordleData.length; j++) {
@@ -60,7 +73,10 @@
         }
       }
     } else {
-      secretWord = getRandomWord().toUpperCase();
+      if (!secretWord) {
+        // Only generate a new secret word if nothing exists in localstorage
+        secretWord = getRandomWord().toUpperCase();
+      }
       animateGrid(false);
     }
 
@@ -69,7 +85,7 @@
 
   beforeNavigate(() => {
     // Save the current status
-    $freeplayState = {
+    $dailyplayState = {
       secretWord: secretWord,
       letters: letters,
       currentActiveRow: currentActiveRow,
@@ -79,7 +95,15 @@
       gameHasStarted: gameHasStarted,
       woordleData: woordleData,
     };
-    console.log($freeplayState);
+    console.log($dailyplayState);
+
+    const dataToStore = {
+      word: secretWord,
+      expiryDate: $dailyTimeRemaining,
+    };
+
+    localStorage.setItem("daily", JSON.stringify(dataToStore));
+
     // Temporarily reset the grid to avoid overflowing
     isGameWon = undefined;
     gameHasStarted = undefined;
@@ -105,19 +129,6 @@
         );
       }
     });
-  }
-
-  function restartGame() {
-    isGameWon = undefined;
-    gameHasStarted = undefined;
-    secretWord = getRandomWord().toUpperCase();
-    console.log(`The secret word is: ${secretWord}`);
-    letters = []; // Array to store the letters for each grid item
-    currentActiveRow = 0;
-    currentActiveColumn = 0;
-    writtenWords = [];
-    woordleData = [];
-    animateGrid(true); // Animate grid
   }
 
   function handleKeyDown(event) {
@@ -305,8 +316,6 @@
             What does this word mean?
           </a>
         </p>
-        <button class="newGameButton" on:click={restartGame}>New Game</button>
-
         <button
           class="closeButton"
           on:click={() => {
@@ -333,7 +342,6 @@
             What does this word mean?
           </a>
         </p>
-        <button class="newGameButton" on:click={restartGame}>New Game</button>
         <button
           class="closeButton"
           on:click={() => {
@@ -346,45 +354,33 @@
 
   <div class="grid">
     <div style="position: absolute; left: 2em;">
-      <span class="gameMode"> Freeplay </span>
-      <p style="color: #6aaa64; padding-top: 0.5em; width: 300px;">
-        {getRandomFreeplay()}
+      <span class="gameMode"> {gameModeType} </span>
+      <p style="color: #6aaa64; padding-top: 1em; width: 300px;">
+        <!-- If the game is over -->
+        {#if isGameWon == -1}
+          <span style="font-weight: bold; font-size: 18px">Next Woordle:</span>
+          <span style="font-size: 18px;">{descriptor}</span>
+          <p transition:fade={{ duration: 500 }} style="font-size: 18px;">
+            Today's answer is
+            <a
+              href="https://wordfind.org/dictionary/{secretWord.toLowerCase()}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="text-decoration: none;"
+            >
+              <span class="secretWord" style="border: none;"
+                >{secretWord.toUpperCase()}</span
+              >
+            </a>
+          </p>
+        {:else}
+          <span style="font-weight: bold; font-size: 18px">Time Remaining:</span
+          >
+          <span style="font-size: 18px;">{descriptor}</span>
+        {/if}
       </p>
       {#if gameHasStarted == true}
         <div transition:fade={{ duration: 500 }}>
-          <button class="resetGameButton" on:click={restartGame}>
-            <span class="resetGameIcon">
-              <svg
-                version="1.0"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 860.000000 917.000000"
-                preserveAspectRatio="xMidYMid meet"
-              >
-                <g
-                  transform="translate(0.000000,917.000000) scale(0.100000,-0.100000)"
-                >
-                  <path
-                    d="M7675 8754 c-16 -8 -241 -226 -500 -484 l-470 -469 -120 84 c-558
-                    391 -1143 616 -1815 697 -250 31 -681 31 -930 0 -316 -38 -618 -110 -892 -211
-                    -1084 -399 -1879 -1151 -2328 -2201 -426 -996 -426 -2127 -1 -3118 358 -835
-                    922 -1471 1696 -1913 290 -166 667 -318 995 -403 786 -202 1645 -155 2390 131
-                    571 219 1036 517 1440 922 534 536 925 1266 1078 2016 44 213 82 553 82 733
-                    l0 72 -518 0 -519 0 -7 -147 c-49 -1071 -666 -2022 -1623 -2502 -285 -143
-                    -570 -232 -903 -282 -134 -20 -192 -24 -430 -24 -310 0 -465 18 -720 81 -833
-                    206 -1530 759 -1919 1523 -149 292 -240 581 -293 921 -19 124 -22 186 -22 425
-                    0 238 3 301 22 420 131 846 601 1590 1287 2041 408 267 850 430 1320 485 142
-                    17 498 17 640 1 413 -49 792 -178 1155 -396 69 -41 136 -84 150 -95 l25 -20
-                    -466 -468 c-257 -257 -472 -478 -478 -490 -15 -30 -14 -40 9 -63 20 -20 33
-                    -20 1325 -20 1433 0 1334 -4 1389 60 14 17 30 48 36 70 7 26 9 455 8 1320 l-3
-                    1282 -24 19 c-28 23 -28 23 -66 3z"
-                  />
-                </g>
-              </svg>
-            </span>
-            Reset game
-          </button>
           <!-- Only show give up button if user hasn't surrendered or anything !-->
           {#if isGameWon == undefined}
             <button class="giveUpButton" on:click={() => (isGameWon = false)}>
@@ -510,7 +506,6 @@
     border: 2px solid rgba(20, 20, 20, 0.3);
   }
 
-  .newGameButton,
   .closeButton {
     display: inline-block;
     padding: 0.5rem 1rem;
@@ -524,7 +519,6 @@
     transition: background-color 0.3s ease-in-out;
   }
 
-  .newGameButton:hover,
   .closeButton:hover {
     background-color: darken(currentColor, 10%);
   }
@@ -544,13 +538,11 @@
     color: #1d3040;
   }
 
-  :global(body) .resetGameIcon,
   :global(body) .giveUpIcon {
     fill: #6aaa64;
     padding-right: 1em;
   }
 
-  :global(body) .resetGameButton,
   :global(body) .giveUpButton {
     display: flex;
     align-items: center;
@@ -566,13 +558,11 @@
     transition: transform 0.2s ease-in-out, background-color 0.3s;
   }
 
-  :global(body.dark-mode) .resetGameButton,
   :global(body.dark-mode) .giveUpButton {
     color: #f2eee2;
     background-color: #1d3040;
   }
 
-  .resetGameButton:hover,
   .giveUpButton:hover {
     transform: scale(1.25);
   }

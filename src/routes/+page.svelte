@@ -7,18 +7,17 @@
         if (!quoteData) {
             try {
                 const response = await getRandomQuote();
-                console.log(response)
+                console.log(response);
                 quote.set(response);
             } catch (error) {
-                console.error('Error fetching quote:', error);
+                console.error("Error fetching quote:", error);
             }
         }
-    })
+    });
 
     quote.subscribe((data) => {
         quoteData = data;
-    })
-
+    });
 </script>
 
 <svelte:head>
@@ -30,12 +29,12 @@
     <img class="logo" src="woordle.png" alt="Woordle" />
 
     <div class="quote-block">
-      {#if quoteData}
-        <blockquote class="quote-text">{quoteData.quote}</blockquote>
-        <p class="quote-author">{quoteData.author}</p>
-      {:else}
-        <p>Loading Quote...</p>
-      {/if}
+        {#if quoteData}
+            <blockquote class="quote-text">{quoteData.quote}</blockquote>
+            <p class="quote-author">{quoteData.author}</p>
+        {:else}
+            <p>Loading Quote...</p>
+        {/if}
     </div>
 
     <div class="actions">
@@ -86,7 +85,7 @@
     .quote-text {
         font-size: 1.2rem;
         font-weight: 600;
-      margin-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
     }
 
     .quote-author {
