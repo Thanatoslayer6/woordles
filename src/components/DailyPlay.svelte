@@ -15,6 +15,7 @@
   let woordleData = [];
   let secretWord, isGameWon, gameHasStarted;
   let isWordExpired = false;
+  let isWordBeingAnimated = false;
 
   onMount(async () => {
     const storedData = JSON.parse(localStorage.getItem("daily"));
@@ -151,6 +152,8 @@
 
   const timer = (ms) => new Promise((res) => setTimeout(res, ms));
   const validateWord = async () => {
+    // Change the value of the flag to stop users from spamming the keyboard
+    isWordBeingAnimated = true;
     // First we validate the formed word pushed in `writtenWords`
     let formedWord = writtenWords[writtenWords.length - 1];
     let validityOfWord = await isWordValid(formedWord);
@@ -243,6 +246,8 @@
     // Reset values to prepare for the next row
     currentActiveColumn = 0;
     letters = [];
+    // Now we let the user type again
+    isWordBeingAnimated = false;
   };
 
   const formLettersAsWord = () => {
@@ -293,7 +298,7 @@
 
 <svelte:window
   on:keydown={(event) => {
-    if (isGameWon == undefined) handleKeyDown(event);
+    if (isGameWon == undefined && isWordBeingAnimated == false) handleKeyDown(event);
   }}
 />
 <div>

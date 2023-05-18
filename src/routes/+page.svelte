@@ -14,7 +14,6 @@
             }
         }
     });
-
     quote.subscribe((data) => {
         quoteData = data;
     });

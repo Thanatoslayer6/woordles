@@ -1,4 +1,4 @@
-import { writable, readable } from "svelte/store";
+import { writable } from "svelte/store";
 export let quote: any = writable(null);
 export let freeplayState: any = writable();
 export let dailyplayState: any = writable();

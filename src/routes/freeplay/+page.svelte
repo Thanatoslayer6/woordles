@@ -13,6 +13,7 @@
   let writtenWords = [];
   let woordleData = [];
   let secretWord, isGameWon, gameHasStarted;
+  let isWordBeingAnimated = false;
 
   onMount(async () => {
     // Load status (first check if there is data stored)
@@ -127,6 +128,7 @@
       addLetterOnGrid(key.toUpperCase());
     }
 
+    // First set a flag to avoid users from spamming the keyboard
     if (key == "Enter") {
       if (letters.length != 6) return;
       formLettersAsWord();
@@ -136,10 +138,13 @@
     if (key == "Backspace") {
       removeLetterOnGrid();
     }
+
   }
 
   const timer = (ms) => new Promise((res) => setTimeout(res, ms));
   const validateWord = async () => {
+    // Change the value of the flag to stop users from spamming the keyboard and messing up the animations
+    isWordBeingAnimated = true;
     // First we validate the formed word pushed in `writtenWords`
     let formedWord = writtenWords[writtenWords.length - 1];
     let validityOfWord = await isWordValid(formedWord);
@@ -232,9 +237,11 @@
     // Reset values to prepare for the next row
     currentActiveColumn = 0;
     letters = [];
+
+    isWordBeingAnimated = false;
   };
 
-  const formLettersAsWord = () => {
+  const formLettersAsWord = () => { 
     let formedWord = letters.join("");
     console.log(`Adding word -> ${formedWord}`);
     writtenWords.push(formedWord);
@@ -282,7 +289,7 @@
 
 <svelte:window
   on:keydown={(event) => {
-    if (isGameWon == undefined) handleKeyDown(event);
+    if (isGameWon == undefined && isWordBeingAnimated == false) handleKeyDown(event);
   }}
 />
 <div>
